@@ -24,5 +24,11 @@ bin
 *~
 
 .env
-.deploy/
 
+.gitsecret/keys/random_seed
+!*.secret
+config/samples/seeed_v1alpha1_wio_air.yaml
+config/samples/seeed_v1alpha1_wio_fahrenheit.yaml
+config/samples/seeed_v1alpha1_wio_humidity.yaml
+config/samples/seeed_v1alpha1_wio_lux.yaml
+config/samples/seeed_v1alpha1_wio_moisture.yaml
