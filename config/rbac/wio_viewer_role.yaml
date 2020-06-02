@@ -1,0 +1,20 @@
+# permissions for end users to view wios.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: wio-viewer-role
+rules:
+- apiGroups:
+  - seeed.leetserve.com
+  resources:
+  - wios
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - seeed.leetserve.com
+  resources:
+  - wios/status
+  verbs:
+  - get

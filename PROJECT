@@ -1,0 +1,7 @@
+domain: leetserve.com
+repo: github.com/gabeduke/wioop
+resources:
+- group: seeed
+  kind: Wio
+  version: v1alpha1
+version: "2"

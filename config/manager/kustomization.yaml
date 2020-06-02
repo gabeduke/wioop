@@ -1,0 +1,12 @@
+resources:
+- manager.yaml
+secretGenerator:
+- envs:
+  - secret/.env
+  name: wioop-secret
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+- name: controller
+  newName: dukeman/wioop
+  newTag: latest
