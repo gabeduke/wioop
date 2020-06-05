@@ -1,0 +1,12 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  labels:
+    app: prometheus
+  name: prometheus
+spec:
+  serviceAccountName: wioop-prometheus
+  serviceMonitorSelector:
+    matchLabels:
+      control-plane: controller-manager
+  retention: 3w

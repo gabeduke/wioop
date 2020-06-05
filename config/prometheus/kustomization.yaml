@@ -1,2 +1,6 @@
 resources:
 - monitor.yaml
+- prometheus-role.yaml
+- prometheus-clusterrolebinding.yaml
+- prometheus-sa.yaml
+- prometheus.yaml

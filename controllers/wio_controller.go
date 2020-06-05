@@ -34,8 +34,9 @@ import (
 )
 
 const (
-	influxURL = "https://us-central1-1.gcp.cloud2.influxdata.com"
-	influxOrg = "c670b60f97bc7205"
+	influxURL     = "https://us-central1-1.gcp.cloud2.influxdata.com"
+	influxOrg     = "c670b60f97bc7205"
+	requeuePeriod = 30 * time.Second
 )
 
 // WioReconciler reconciles a Wio object
@@ -87,9 +88,13 @@ func (r *WioReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		log.Error(err, "unable to unpack response")
 	}
 
-	log.V(0).Info("response", "data", f)
+	log.V(1).Info("response", "data", f)
 
-	value := f[wio.Spec.ResponsePath].(float64)
+	value, ok := f[wio.Spec.ResponsePath].(float64)
+	if !ok {
+		log.Info("unable to parse value")
+		return ctrl.Result{RequeueAfter: requeuePeriod}, nil
+	}
 
 	log.V(1).Info("read success", "value", value)
 

@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"github.com/prometheus/client_golang/prometheus"
 	"os"
 
 	"github.com/kelseyhightower/envconfig"
@@ -35,6 +36,19 @@ import (
 var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
+
+	goobers = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "goobers_total",
+			Help: "Number of goobers proccessed",
+		},
+	)
+	gooberFailures = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "goober_failures_total",
+			Help: "Number of failed goobers",
+		},
+	)
 )
 
 func init() {

@@ -33,6 +33,9 @@ spec:
         envFrom:
           - secretRef:
               name: wioop-secret
+        ports:
+          - containerPort: 8080
+            name: metrics
         resources:
           limits:
             cpu: 100m
