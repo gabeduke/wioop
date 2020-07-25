@@ -1,0 +1,71 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get dependencies
+      run: |
+        go get -v -t -d ./...
+        if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+        fi
+
+    - name: Build
+      run: go build -v .
+
+    - name: Test
+      run: go test -v .
+
+  buildx:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Set up Docker Buildx
+        uses: crazy-max/ghaction-docker-buildx@v3
+      -
+        name: Docker Login
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
+      -
+        name: Docker Buildx (push)
+        run: |
+          docker buildx build \
+            --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x \
+            --output "type=image,push=true" \
+            --tag dukeman/wioop:latest \
+            --file ./Dockerfile ./
+      -
+        name: Docker Check Manifest
+        run: |
+          docker run --rm mplatform/mquery dukeman/wioop:latest
+      -
+        name: Clear
+        if: always()
+        run: |
+          rm -f ${HOME}/.docker/config.json
