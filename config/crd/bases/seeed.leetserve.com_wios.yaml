@@ -8,6 +8,20 @@ metadata:
   creationTimestamp: null
   name: wios.seeed.leetserve.com
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.sensor_id
+    name: Sensor ID
+    type: string
+  - JSONPath: .spec.sensor_path
+    name: Sensor Path
+    type: string
+  - JSONPath: .status.lastScrapeValue
+    description: The last known scrape value
+    name: Value
+    type: integer
+  - JSONPath: .status.lastScrapeTime
+    name: Last Scrape
+    type: date
   group: seeed.leetserve.com
   names:
     kind: Wio

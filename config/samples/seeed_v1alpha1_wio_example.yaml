@@ -1,10 +1,10 @@
-apiVersion: seeed.leetserve.com/v1alpha1
-kind: Wio
-metadata:
-  name: air
-spec:
-  base_url: https://us.wio.seeed.io/v1/node
-  sensor_id: GroveAirqualityA0
-  sensor_path: quality
-  response_path: quality
-  token: xxx
+#apiVersion: seeed.leetserve.com/v1alpha1
+#kind: Wio
+#metadata:
+#  name: air
+#spec:
+#  base_url: https://us.wio.seeed.io/v1/node
+#  sensor_id: GroveAirqualityA0
+#  sensor_path: quality
+#  response_path: quality
+#  token: xxx

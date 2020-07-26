@@ -52,6 +52,10 @@ type WioStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Sensor ID",type="string",JSONPath=".spec.sensor_id"
+// +kubebuilder:printcolumn:name="Sensor Path",type="string",JSONPath=".spec.sensor_path"
+// +kubebuilder:printcolumn:name="Value",type="integer",JSONPath=".status.lastScrapeValue",description="The last known scrape value"
+// +kubebuilder:printcolumn:name="Last Scrape",type="date",JSONPath=".status.lastScrapeTime"
 
 // Wio is the Schema for the wios API
 type Wio struct {
