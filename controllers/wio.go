@@ -15,7 +15,7 @@ import (
 )
 
 // scrap fetches the sensor value from a wio device
-func (r *WioReconciler) Scrape(wio v1alpha1.Wio, log logr.Logger) (float64, error) {
+func (r *WioReconciler) Scrape(wio *v1alpha1.Wio, log logr.Logger) (float64, error) {
 	u, err := url.Parse(wio.Spec.BaseUrl)
 	if err != nil {
 		return 0, err
@@ -66,7 +66,7 @@ func (r *WioReconciler) Scrape(wio v1alpha1.Wio, log logr.Logger) (float64, erro
 }
 
 // WriteValueToDB persists the metric to InfluxDB
-func (r *WioReconciler) WriteValueToDB(wio v1alpha1.Wio, value float64, log logr.Logger) error {
+func (r *WioReconciler) WriteValueToDB(wio *v1alpha1.Wio, value float64, log logr.Logger) error {
 	// create new client with default option for server url authenticate by token
 	influxClient := influxdb2.NewClient(influxURL, r.Config.InfluxToken)
 
@@ -87,14 +87,13 @@ func (r *WioReconciler) WriteValueToDB(wio v1alpha1.Wio, value float64, log logr
 }
 
 // UpdateStatus updates the CRD with the latest Scrape value and timestamp
-func (r *WioReconciler) UpdateStatus(wio v1alpha1.Wio, value float64, ctx context.Context, log logr.Logger) (error) {
+func (r *WioReconciler) UpdateStatus(wio *v1alpha1.Wio, value float64, ctx context.Context, log logr.Logger) error {
 	// Update status
 	wio.Status.LastScrapeTime = &v1.Time{Time: time.Now()}
 	wio.Status.LastScrapeValue = int(value)
-	if err := r.Status().Update(ctx, &wio); err != nil {
+	if err := r.Status().Update(ctx, wio); err != nil {
 		log.Error(err, "unable to update Wio status")
 		return err
 	}
 	return nil
 }
-

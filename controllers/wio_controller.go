@@ -18,6 +18,8 @@ package controllers
 
 import (
 	"context"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -52,27 +54,50 @@ func (r *WioReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	var wio seeedv1alpha1.Wio
 	if err := r.Get(ctx, req.NamespacedName, &wio); err != nil {
 		log.Error(err, "unable to fetch Wio")
-		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	value, err := r.Scrape(wio, log)
+	log.V(1).Info("scrape value")
+	value, err := r.Scrape(&wio, log)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if r.WriteValueToDB(wio, value, log); err != nil {
+	log.V(1).Info("write to db")
+	if r.WriteValueToDB(&wio, value, log); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if r.UpdateStatus(wio, value, ctx, log); err != nil {
+	log.V(1).Info("update status")
+	if r.UpdateStatus(&wio, value, ctx, log); err != nil {
 		return ctrl.Result{}, err
 	}
 
+	log.V(1).Info("success")
 	return ctrl.Result{RequeueAfter: requeuePeriod}, nil
 }
 
 func (r *WioReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&seeedv1alpha1.Wio{}).
+		WithEventFilter(predicate.Funcs{
+			DeleteFunc: func(e event.DeleteEvent) bool {
+				// The reconciler adds a finalizer so we perform clean-up
+				// when the delete timestamp is added
+				// Suppress Delete events to avoid filtering them out in the Reconcile function
+				return false
+			},
+		}).
+		WithEventFilter(predicate.Funcs{
+			UpdateFunc: func(e event.UpdateEvent) bool {
+				oldObject := e.ObjectOld.(*seeedv1alpha1.Wio)
+				newObject := e.ObjectNew.(*seeedv1alpha1.Wio)
+				if oldObject.Status != newObject.Status {
+					// NO enqueue request
+					return false
+				}
+				// ENQUEUE request
+				return true
+			},
+		}).
 		Complete(r)
 }

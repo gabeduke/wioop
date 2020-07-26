@@ -62,11 +62,11 @@ spec:
         status:
           description: WioStatus defines the observed state of Wio
           properties:
-            last_scrape_value:
-              type: integer
             lastScrapeTime:
               format: date-time
               type: string
+            lastScrapeValue:
+              type: integer
           type: object
       type: object
   version: v1alpha1

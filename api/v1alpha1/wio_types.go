@@ -46,7 +46,7 @@ type WioSpec struct {
 
 // WioStatus defines the observed state of Wio
 type WioStatus struct {
-	LastScrapeValue int          `json:"last_scrape_value,omitempty"`
+	LastScrapeValue int          `json:"lastScrapeValue,omitempty"`
 	LastScrapeTime  *metav1.Time `json:"lastScrapeTime,omitempty"`
 }
 
