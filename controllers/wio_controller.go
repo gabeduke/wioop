@@ -18,14 +18,9 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/influxdata/influxdb-client-go"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -60,62 +55,20 @@ func (r *WioReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	url := fmt.Sprintf("%s/%s/%s", wio.Spec.BaseUrl, wio.Spec.SensorID, wio.Spec.SensorPath)
-
-	client := &http.Client{}
-
-	// Create a new request using http
-	request, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Error(err, "unable to build request")
-	}
-
-	// add authorization header to the req
-	request.Header.Add("Authorization", wio.Spec.Token)
-
-	// send it
-	resp, err := client.Do(request)
+	value, err := r.Scrape(wio, log)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	body, _ := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-
-	var f map[string]interface{}
-
-	if err = json.Unmarshal([]byte(body), &f); err != nil {
-		log.Error(err, "unable to unpack response")
-	}
-
-	log.V(1).Info("response", "data", f)
-
-	value, ok := f[wio.Spec.ResponsePath].(float64)
-	if !ok {
-		log.Info("unable to parse value")
-		return ctrl.Result{RequeueAfter: requeuePeriod}, nil
-	}
-
-	log.V(1).Info("read success", "value", value)
-
-	// create new client with default option for server url authenticate by token
-	influxClient := influxdb2.NewClient(influxURL, r.Config.InfluxToken)
-
-	// user blocking write client for writes to desired bucket
-	writeApi := influxClient.WriteApiBlocking(influxOrg, "Fleet IOT")
-
-	// create point using fluent style
-	p := influxdb2.NewPointWithMeasurement("fleet-metrics").
-		AddTag("unit", wio.Spec.SensorPath).
-		AddField(wio.Spec.SensorID, value).
-		SetTime(time.Now())
-	log.V(0).Info("write to influx", "name", p.Name(), "measurement", p.FieldList(), "tags", p.TagList())
-
-	if err := writeApi.WritePoint(context.Background(), p); err != nil {
+	if r.WriteValueToDB(wio, value, log); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
+	if r.UpdateStatus(wio, ctx, log); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	return ctrl.Result{RequeueAfter: requeuePeriod}, nil
 }
 
 func (r *WioReconciler) SetupWithManager(mgr ctrl.Manager) error {

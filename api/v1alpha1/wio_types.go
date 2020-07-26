@@ -46,11 +46,12 @@ type WioSpec struct {
 
 // WioStatus defines the observed state of Wio
 type WioStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	LastScrapeValue int          `json:"last_scrape_value,omitempty"`
+	LastScrapeTime  *metav1.Time `json:"lastScrapeTime,omitempty"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // Wio is the Schema for the wios API
 type Wio struct {
