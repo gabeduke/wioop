@@ -62,7 +62,6 @@ func (r *WioReconciler) Scrape(wio v1alpha1.Wio, log logr.Logger) (float64, erro
 	}
 
 	log.V(1).Info("read success", "value", value)
-	wio.Status.LastScrapeValue = int(value)
 	return value, nil
 }
 
@@ -88,9 +87,10 @@ func (r *WioReconciler) WriteValueToDB(wio v1alpha1.Wio, value float64, log logr
 }
 
 // UpdateStatus updates the CRD with the latest Scrape value and timestamp
-func (r *WioReconciler) UpdateStatus(wio v1alpha1.Wio, ctx context.Context, log logr.Logger) (error) {
+func (r *WioReconciler) UpdateStatus(wio v1alpha1.Wio, value float64, ctx context.Context, log logr.Logger) (error) {
 	// Update status
 	wio.Status.LastScrapeTime = &v1.Time{Time: time.Now()}
+	wio.Status.LastScrapeValue = int(value)
 	if err := r.Status().Update(ctx, &wio); err != nil {
 		log.Error(err, "unable to update Wio status")
 		return err

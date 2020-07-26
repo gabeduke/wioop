@@ -64,7 +64,7 @@ func (r *WioReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	if r.UpdateStatus(wio, ctx, log); err != nil {
+	if r.UpdateStatus(wio, value, ctx, log); err != nil {
 		return ctrl.Result{}, err
 	}
 
